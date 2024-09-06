@@ -7,14 +7,14 @@ app.use(express.json());
 const locationPath = './location.json';
 
 app.get('/api/location', (req, res) => {
-    res.send(getFileContent(locationPath));
+    res.status(200).json(getFileContent(locationPath));
 });
 
 app.get('/api/location/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const location = getObjectById(locationPath, id);
     if (location) {
-        res.json(location);
+        res.status(200).json(location);
     } else {
         res.status(404).json({ error: `Location with id ${id} not found` });
     }
@@ -33,7 +33,7 @@ app.post('/api/location', (req, res) => {
 
     console.log(getLastId(locationPath));
 
-    res.send(data);
+    res.status(201).json(data);
 });
 
 const port = 5000;
