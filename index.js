@@ -30,8 +30,6 @@ app.post('/api/location', (req, res) => {
 
     fs.writeFileSync(locationPath, JSON.stringify(fullData, null, 2));
 
-    console.log(getLastId(locationPath));
-
     res.status(201).json(data);
 });
 
