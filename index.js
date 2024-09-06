@@ -3,13 +3,13 @@ import fs from 'fs';
 const app = express();
 app.use(express.json());
 
-const locationPath = './location.json';
+const locationPath = "./location.json";
 
-app.get('/api/location', (req, res) => {
+app.get("/api/location", (req, res) => {
     res.status(200).json(getFileContent(locationPath));
 });
 
-app.get('/api/location/:id', (req, res) => {
+app.get("/api/location/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const location = getObjectById(locationPath, id);
     if (location) {
@@ -19,7 +19,7 @@ app.get('/api/location/:id', (req, res) => {
     }
 });
 
-app.post('/api/location', (req, res) => {
+app.post("/api/location", (req, res) => {
     const data = req.body;
 
     data.id = getLastId(locationPath) + 1;
@@ -38,7 +38,7 @@ app.listen(port, () => console.log(`Server is listening on port ${port}`));
 
 function getFileContent(path) {
     try {
-        return JSON.parse(fs.readFileSync(path, 'utf8'));
+        return JSON.parse(fs.readFileSync(path, "utf8"));
     } catch (error) {
         return [];
     }
@@ -46,7 +46,7 @@ function getFileContent(path) {
 
 function getObjectById(path, id) {
     try {
-        const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(path, "utf8"));
         return data.find(item => item.id === id);
     } catch (error) {
         return [];
@@ -55,10 +55,10 @@ function getObjectById(path, id) {
 
 function getLastId(path) {
     try {
-        const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(path, "utf8"));
 
         if (data.length === 0) {
-            throw new Error('File is empty');
+            throw new Error("File is empty");
         }
 
         return data[data.length - 1].id;
