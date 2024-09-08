@@ -6,7 +6,11 @@ app.use(express.json());
 
 const locationPath = "./location.json";
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type,Authorization'
+}));
 
 app.get("/api/location", (req, res) => {
   res.status(200).json(getFileContent(locationPath));
