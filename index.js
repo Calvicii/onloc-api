@@ -48,7 +48,8 @@ app.post("/api/location", (req, res) => {
 });
 
 const port = 8118;
-app.listen(port, () => console.log(`Server is listening on port ${port}`));
+const ip = "0.0.0.0";
+app.listen(port, ip, () => console.log(`Server is listening on ${ip}:${port}`));
 
 function getFileContent(path) {
   try {
