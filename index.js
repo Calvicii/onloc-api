@@ -34,7 +34,8 @@ app.get("/api/location/latest", (req, res) => {
 });
 
 app.get("/api/location/latest/:device", (req, res) => {
-  const location = getLastLocationOfDevice(locationPath, req.params.device);
+  const device = req.params.device;
+  const location = getLastLocationOfDevice(locationPath, device);
 
   if (location) {
     res.status(200).json(location);
