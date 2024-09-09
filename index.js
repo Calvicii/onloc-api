@@ -6,26 +6,58 @@ app.use(express.json());
 
 const locationPath = "./location.json";
 
-app.use(cors({
-  origin: "*",
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type,Authorization'
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Content-Type,Authorization",
+  })
+);
 
 app.get("/api/location", (req, res) => {
   res.status(200).json(getFileContent(locationPath));
 });
 
-app.get("/api/location/:id", (req, res) => {
-    let id;
-    let location;
-  if (req.params.id !== "latest") {
-    id = parseInt(req.params.id);
-    location = getObjectById(locationPath, id);
-  } else {
-    location = getObjectById(locationPath, getLastId(locationPath));
-    console.log(getLastId());
+app.get("/api/location/latest", (req, res) => {
+  const devices = getDevices();
+  let locations = [];
+
+  for (const device of devices) {
+    locations.push(getLastLocationOfDevice(locationPath, device))
   }
+
+  if (locations) {
+    res.status(200).json(locations);
+  } else {
+    res.status(404).json({ error: `Latest location not found` });
+  }
+});
+
+app.get("/api/location/latest/:device", (req, res) => {
+  const location = getLastLocationOfDevice(locationPath, req.params.device);
+
+  if (location) {
+    res.status(200).json(location);
+  } else {
+    res.status(404).json({ error: `Location with device ${device} not found` });
+  }
+});
+
+app.get("/api/location/devices", (req, res) => {
+  const devices = getDevices(locationPath);
+
+  if (devices) {
+    res.status(200).json(devices);
+  } else {
+    res
+      .status(404)
+      .json({ error: `Location with device ${devices} not found` });
+  }
+});
+
+app.get("/api/location/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const location = getObjectById(locationPath, id);
   if (location) {
     res.status(200).json(location);
   } else {
@@ -80,4 +112,28 @@ function getLastId(path) {
   } catch (error) {
     return 0;
   }
+}
+
+function getDevices(path) {
+  let devices = [];
+
+  for (const device of getFileContent(locationPath)) {
+    if (devices.indexOf(device.device) === -1) {
+      devices.push(device.device);
+    }
+  }
+
+  return devices;
+}
+
+function getLastLocationOfDevice(path, name) {
+  let location;
+
+  for (const entry of getFileContent(path)) {
+    if (entry.device === name) {
+      location = entry;
+    }
+  }
+
+  return location;
 }
