@@ -14,10 +14,12 @@ app.use(
   })
 );
 
+// Returns every stored location
 app.get("/api/location", (req, res) => {
   res.status(200).json(getFileContent(locationPath));
 });
 
+// Returns the latest location of every device
 app.get("/api/location/latest", (req, res) => {
   const devices = getDevices();
   let locations = [];
@@ -33,6 +35,7 @@ app.get("/api/location/latest", (req, res) => {
   }
 });
 
+// Returns the latest location of the specified device
 app.get("/api/location/latest/:device", (req, res) => {
   const device = req.params.device;
   const location = getLastLocationOfDevice(locationPath, device);
@@ -44,7 +47,8 @@ app.get("/api/location/latest/:device", (req, res) => {
   }
 });
 
-app.get("/api/location/devices", (req, res) => {
+// Returns the name of every devices registered
+app.get("/api/devices", (req, res) => {
   const devices = getDevices(locationPath);
 
   if (devices) {
@@ -56,6 +60,7 @@ app.get("/api/location/devices", (req, res) => {
   }
 });
 
+// Returns the location with the specified id
 app.get("/api/location/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const location = getObjectById(locationPath, id);
@@ -66,6 +71,7 @@ app.get("/api/location/:id", (req, res) => {
   }
 });
 
+// Stores a location
 app.post("/api/location", (req, res) => {
   const data = req.body;
 
