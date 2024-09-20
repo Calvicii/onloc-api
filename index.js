@@ -1,10 +1,14 @@
 import express from "express";
 import cors from "cors";
 import fs from "fs";
+import { LocationService } from "./services/locationService.js";
+import { join } from "path";
+
 const app = express();
 app.use(express.json());
 
 const locationPath = "./location.json";
+const locationService = new LocationService(locationPath);
 
 app.use(
   cors({
@@ -14,133 +18,94 @@ app.use(
   })
 );
 
-// Returns every stored location
-app.get("/api/location", (req, res) => {
-  res.status(200).json(getFileContent(locationPath));
-});
+// Returns locations with optional filtering
+app.get("/api/locations", (req, res) => {
+  const deviceId = req.query.deviceId; // Get deviceId from query parameters
+  const filter = req.query.filter;
 
-// Returns the latest location of every device
-app.get("/api/location/latest", (req, res) => {
-  const devices = getDevices();
-  let locations = [];
+  try {
+    const locations = locationService.loadLocations(); // Load all locations
 
-  for (const device of devices) {
-    locations.push(getLastLocationOfDevice(locationPath, device))
-  }
+    // If the filter is 'latest', gather the latest location for each device
+    if (filter === "latest") {
+      const latestLocations = {};
 
-  if (locations) {
+      locations.forEach((location) => {
+        if (
+          !latestLocations[location.deviceId] ||
+          new Date(location.timestamp) >
+            new Date(latestLocations[location.deviceId].timestamp)
+        ) {
+          latestLocations[location.deviceId] = location; // Update with latest location
+        }
+      });
+
+      // If a deviceId is provided, return only that device's latest location
+      if (deviceId) {
+        if (latestLocations[deviceId]) {
+          return res.status(200).json(latestLocations[deviceId]); // Return the latest location for the specified device
+        } else {
+          return res
+            .status(404)
+            .json({ error: `No locations found for device ${deviceId}` });
+        }
+      }
+
+      return res.status(200).json(Object.values(latestLocations)); // Return latest locations for all devices
+    }
+
+    // If no filter is applied, return the filtered locations by deviceId
+    if (deviceId) {
+      const filteredLocations = locations.filter(
+        (loc) => loc.deviceId === deviceId
+      );
+      return res.status(200).json(filteredLocations);
+    }
+
+    // If no filters are applied, return all locations
     res.status(200).json(locations);
-  } else {
-    res.status(404).json({ error: `Latest location not found` });
+  } catch (error) {
+    console.error("Error loading locations:", error);
+    res.status(500).json({ error: "Failed to load locations" }); // Handle errors
   }
 });
 
-// Returns the latest location of the specified device
-app.get("/api/location/latest/:device", (req, res) => {
-  const device = req.params.device;
-  const location = getLastLocationOfDevice(locationPath, device);
-
-  if (location) {
-    res.status(200).json(location);
-  } else {
-    res.status(404).json({ error: `Location with device ${device} not found` });
-  }
-});
-
-// Returns the name of every devices registered
-app.get("/api/devices", (req, res) => {
-  const devices = getDevices(locationPath);
-
-  if (devices) {
-    res.status(200).json(devices);
-  } else {
-    res
-      .status(404)
-      .json({ error: `Location with device ${devices} not found` });
-  }
-});
-
-// Returns the location with the specified id
-app.get("/api/location/:id", (req, res) => {
+// Returns a specific location
+app.get("/api/locations/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  const location = getObjectById(locationPath, id);
-  if (location) {
-    res.status(200).json(location);
-  } else {
-    res.status(404).json({ error: `Location with id ${id} not found` });
+
+  try {
+    const locations = locationService.loadLocations();
+    const location = locations.find((loc) => loc.id === id);
+
+    if (location) {
+      res.status(200).json(location);
+    } else {
+      res.status(400).json({ error: `Location with id ${id} not found` });
+    }
+  } catch (error) {
+    console.error("Error loading locations:", error);
+    res.status(500).json({ error: "Failed to load locations" });
   }
 });
 
 // Stores a location
-app.post("/api/location", (req, res) => {
+app.post("/api/locations", (req, res) => {
   const data = req.body;
 
-  data.id = getLastId(locationPath) + 1;
+  if (!data.timestamp || (data.mocked === null || data.mocked === undefined) || !data.coords || !data.deviceId) {
+    return res.status(400).json({ error: "Missing required fields: timestamp, mocked, coords and deviceId" });
+  }
 
-  let fullData = getFileContent(locationPath);
-
-  fullData.push(data);
-
-  fs.writeFileSync(locationPath, JSON.stringify(fullData, null, 2));
-
-  res.status(201).json(data);
+  try {
+    const newLocation = locationService.addLocation(data);
+    res.status(201).json(newLocation);
+  } catch (error) {
+    console.error("Error saving location:", error);
+    res.status(500).json({ error: "Failed to save location" });
+  }
 });
 
-const port = 8118;
+const port = process.env.PORT || 8118;
 const ip = "0.0.0.0";
 app.listen(port, ip, () => console.log(`Server is listening on ${ip}:${port}`));
-
-function getFileContent(path) {
-  try {
-    return JSON.parse(fs.readFileSync(path, "utf8"));
-  } catch (error) {
-    return [];
-  }
-}
-
-function getObjectById(path, id) {
-  try {
-    const data = JSON.parse(fs.readFileSync(path, "utf8"));
-    return data.find((item) => item.id === id);
-  } catch (error) {
-    return [];
-  }
-}
-
-function getLastId(path) {
-  try {
-    const data = JSON.parse(fs.readFileSync(path, "utf8"));
-
-    if (data.length === 0) {
-      throw new Error("File is empty");
-    }
-
-    return data[data.length - 1].id;
-  } catch (error) {
-    return 0;
-  }
-}
-
-function getDevices(path) {
-  let devices = [];
-
-  for (const device of getFileContent(locationPath)) {
-    if (devices.indexOf(device.device) === -1) {
-      devices.push(device.device);
-    }
-  }
-
-  return devices;
-}
-
-function getLastLocationOfDevice(path, name) {
-  let location;
-
-  for (const entry of getFileContent(path)) {
-    if (entry.device === name) {
-      location = entry;
-    }
-  }
-
-  return location;
-}
