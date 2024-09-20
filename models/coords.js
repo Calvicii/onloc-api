@@ -1,12 +1,11 @@
 export class Coords {
-    constructor(altitude, heading, altitudeAccuracy, latitude, speed, longitude, accuracy) {
-        this.altitude = altitude;
-        this.heading = heading;
+    constructor(accuracy, altitude, altitudeAccuracy, heading, latitude, longitude, speed) {
+        this.accuracy = accuracy;
         this.altitude = altitude;
         this.altitudeAccuracy = altitudeAccuracy;
+        this.heading = heading;
         this.latitude = latitude;
-        this.speed = speed;
         this.longitude = longitude;
-        this.accuracy = accuracy;
+        this.speed = speed;
     }
 }

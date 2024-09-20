@@ -5,7 +5,7 @@ export class Location {
     this.id = id;
     this.timestamp = timestamp;
     this.mocked = mocked;
-    this.coords = new Coords(coords.altitude, coords.heading, coords.altitude, coords.altitudeAccuracy, coords.latitude, coords.speed, coords.longitude, coords.accuracy);
+    this.coords = new Coords(coords.accuracy, coords.altitude, coords.altitudeAccuracy, coords.heading, coords.latitude, coords.longitude, coords.speed);
     this.deviceId = deviceId;
   }
 }
