@@ -89,6 +89,28 @@ app.get("/api/locations/:id", (req, res) => {
   }
 });
 
+app.get("/api/devices", (req, res) => {
+  try {
+    const locations = locationService.loadLocations();
+    let devices = [];
+    
+    for (let location of locations) {
+      if (!devices.includes(location.deviceId)) {
+        devices.push(location.deviceId);
+      }
+    }
+
+    if (devices.length > 0) {
+      res.status(200).json(devices);
+    } else {
+      res.status(404).json({ error: "No device found" })
+    }
+  } catch (error) {
+    console.error("Error loading devices:", error);
+    res.status(500).json({ error: "Failed to load devices" });
+  }
+});
+
 // Stores a location
 app.post("/api/locations", (req, res) => {
   const data = req.body;
