@@ -9,6 +9,14 @@ export function getFileContent(path) {
   }
 }
 
+export function writeToFile(path, data) {
+  try {
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export function getObjectById(path, id) {
   try {
     const data = JSON.parse(fs.readFileSync(path, "utf8"));

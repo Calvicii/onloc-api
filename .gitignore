@@ -1,3 +1,5 @@
 /node_modules
-location.json
+locations.json
+users.json
+devices.json
 .env

@@ -1,6 +1,5 @@
-import fs from "fs";
 import { Location } from "../models/location.js";
-import { getNextId } from "../utils.js";
+import { getFileContent, writeToFile, getNextId } from "../utils.js";
 
 export class LocationService {
   constructor(filePath) {
@@ -8,10 +7,9 @@ export class LocationService {
   }
 
   loadLocations() {
-    const fileContent = fs.readFileSync(this.filePath, "utf-8");
-    const locationData = JSON.parse(fileContent);
+    const fileContent = getFileContent(this.filePath);
 
-    return locationData.map(
+    return fileContent.map(
       (location) =>
         new Location(
           location.id,
@@ -47,6 +45,6 @@ export class LocationService {
       deviceId: location.deviceId,
     }));
 
-    fs.writeFileSync(this.filePath, JSON.stringify(rawData, null, 2));
+    writeToFile(this.filePath, rawData);
   }
 }

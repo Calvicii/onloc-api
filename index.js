@@ -1,14 +1,20 @@
 import express from "express";
 import cors from "cors";
-import fs from "fs";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { LocationService } from "./services/locationService.js";
-import { join } from "path";
+import { UserService } from "./services/userService.js";
+import { authenticateToken } from "./middleware/auth.js";
+import "dotenv/config";
 
 const app = express();
 app.use(express.json());
 
-const locationPath = "./location.json";
-const locationService = new LocationService(locationPath);
+const locationsPath = "./locations.json";
+const locationService = new LocationService(locationsPath);
+
+const usersPath = "./users.json";
+const userService = new UserService(usersPath);
 
 app.use(
   cors({
@@ -17,6 +23,83 @@ app.use(
     allowedHeaders: "Content-Type,Authorization",
   })
 );
+
+app.post("/api/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = userService
+      .loadUsers()
+      .find((user) => user.username === username);
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, username: user.username },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { id: user.id, username: user.username },
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ error: "An error occurred during login" });
+  }
+});
+
+app.post("/api/register", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password required" });
+  }
+
+  try {
+    const users = userService.loadUsers();
+
+    const existingUser = users.find((user) => user.username === username);
+    if (existingUser) {
+      return res.status(409).json({ error: "Username is already taken" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = userService.addUser(username, hashedPassword);
+
+    const token = jwt.sign(
+      { userId: newUser.id, username: newUser.username },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: { id: newUser.id, username: newUser.username },
+    });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ error: "An error occurred during registration" });
+  }
+});
+
+app.get("/api/user", authenticateToken, (req, res) => {
+  res.status(200).json({ id: req.user.userId, username: req.user.username });
+});
 
 // Returns locations with optional filtering
 app.get("/api/locations", (req, res) => {
@@ -93,7 +176,7 @@ app.get("/api/devices", (req, res) => {
   try {
     const locations = locationService.loadLocations();
     let devices = [];
-    
+
     for (let location of locations) {
       if (!devices.includes(location.deviceId)) {
         devices.push(location.deviceId);
@@ -103,7 +186,7 @@ app.get("/api/devices", (req, res) => {
     if (devices.length > 0) {
       res.status(200).json(devices);
     } else {
-      res.status(404).json({ error: "No device found" })
+      res.status(404).json({ error: "No device found" });
     }
   } catch (error) {
     console.error("Error loading devices:", error);
@@ -115,8 +198,16 @@ app.get("/api/devices", (req, res) => {
 app.post("/api/locations", (req, res) => {
   const data = req.body;
 
-  if (!data.timestamp || (data.mocked === null || data.mocked === undefined) || !data.coords || !data.deviceId) {
-    return res.status(400).json({ error: "Missing required fields: timestamp, mocked, coords and deviceId" });
+  if (
+    !data.timestamp ||
+    data.mocked === null ||
+    data.mocked === undefined ||
+    !data.coords ||
+    !data.deviceId
+  ) {
+    return res.status(400).json({
+      error: "Missing required fields: timestamp, mocked, coords and deviceId",
+    });
   }
 
   try {
