@@ -16,6 +16,11 @@ const locationService = new LocationService(locationsPath);
 const usersPath = "./users.json";
 const userService = new UserService(usersPath);
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
 app.use(
   cors({
     origin: "*",
@@ -103,7 +108,8 @@ app.get("/api/user", authenticateToken, (req, res) => {
 
 // Returns locations with optional filtering
 app.get("/api/locations", (req, res) => {
-  const deviceId = req.query.deviceId; // Get deviceId from query parameters
+  // Grab query parameters
+  const deviceId = req.query.deviceId;
   const filter = req.query.filter;
 
   try {
@@ -196,21 +202,21 @@ app.get("/api/devices", (req, res) => {
 
 // Stores a location
 app.post("/api/locations", (req, res) => {
-  const data = req.body;
-
-  if (
-    !data.timestamp ||
-    data.mocked === null ||
-    data.mocked === undefined ||
-    !data.coords ||
-    !data.deviceId
-  ) {
-    return res.status(400).json({
-      error: "Missing required fields: timestamp, mocked, coords and deviceId",
-    });
-  }
-
   try {
+    const data = req.body;
+
+    if (
+      !data.timestamp ||
+      data.mocked === null ||
+      data.mocked === undefined ||
+      !data.coords ||
+      !data.deviceId
+    ) {
+      return res.status(400).json({
+        error: "Missing required fields: timestamp, mocked, coords and deviceId",
+      });
+    }
+
     const newLocation = locationService.addLocation(data);
     res.status(201).json(newLocation);
   } catch (error) {
