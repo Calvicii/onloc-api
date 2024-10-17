@@ -2,12 +2,12 @@ import { Device } from "../models/device.js";
 import { getFileContent, writeToFile, getNextId } from "../utils.js";
 
 export class DeviceService {
-  constructor(filePath) {
-    this.filePath = filePath;
+  constructor(deviceFilePath) {
+    this.deviceFilePath = deviceFilePath;
   }
 
   loadDevices() {
-    const fileContent = getFileContent(this.filePath);
+    const fileContent = getFileContent(this.deviceFilePath);
 
     return fileContent.map(
       (device) => new Device(device.id, device.ownerId, device.name)
@@ -17,7 +17,7 @@ export class DeviceService {
   addDevice(newDeviceData) {
     const devices = this.loadDevices();
     const newDevice = new Device(
-      getNextId(this.filePath),
+      getNextId(this.deviceFilePath),
       newDeviceData.ownerId,
       newDeviceData.name
     );
@@ -34,6 +34,6 @@ export class DeviceService {
       name: device.name,
     }));
 
-    writeToFile(this.filePath, rawData);
+    writeToFile(this.deviceFilePath, rawData);
   }
 }

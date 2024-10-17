@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { LocationService } from "./services/locationService.js";
-import { DeviceService } from "./services/deviceService.js";
+import { LocationController } from "./controllers/locationController.js";
+import { DeviceController } from "./controllers/deviceController.js";
+import { UserController } from "./controllers/userController.js";
 import { UserService } from "./services/userService.js";
 import { authenticateToken } from "./middleware/auth.js";
 import "dotenv/config";
@@ -11,11 +12,9 @@ import "dotenv/config";
 const app = express();
 app.use(express.json());
 
-const locationsPath = "./locations.json";
-const locationService = new LocationService(locationsPath);
-
-const devicesPath = "./devices.json";
-const deviceService = new DeviceService(devicesPath);
+const locationController = new LocationController();
+const deviceController = new DeviceController();
+const userController = new UserController();
 
 const usersPath = "./users.json";
 const userService = new UserService(usersPath);
@@ -35,6 +34,15 @@ app.use(
 
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
+
+  // const result = userController.login(username, password);
+  // if (result.error) {
+  //   return res.status(result.status).json({ error: result.error });
+  // }
+
+  // res
+  //   .status(result.status)
+  //   .json({ message: result.message, token: result.token, user: result.user });
 
   try {
     const user = userService
@@ -110,142 +118,72 @@ app.get("/api/user", authenticateToken, (req, res) => {
   res.status(200).json({ id: req.user.userId, username: req.user.username });
 });
 
+//#region Locations
+
 // Returns locations with optional filtering
 app.get("/api/locations", (req, res) => {
   // Grab query parameters
   const deviceId = req.query.deviceId;
   const filter = req.query.filter;
 
-  try {
-    const locations = locationService.loadLocations(); // Load all locations
-
-    // If the filter is 'latest', gather the latest location for each device
-    if (filter === "latest") {
-      const latestLocations = {};
-
-      locations.forEach((location) => {
-        if (
-          !latestLocations[location.deviceId] ||
-          new Date(location.timestamp) >
-            new Date(latestLocations[location.deviceId].timestamp)
-        ) {
-          latestLocations[location.deviceId] = location; // Update with latest location
-        }
-      });
-
-      // If a deviceId is provided, return only that device's latest location
-      if (deviceId) {
-        if (latestLocations[deviceId]) {
-          return res.status(200).json(latestLocations[deviceId]); // Return the latest location for the specified device
-        } else {
-          return res
-            .status(404)
-            .json({ error: `No locations found for device ${deviceId}` });
-        }
-      }
-
-      return res.status(200).json(Object.values(latestLocations)); // Return latest locations for all devices
-    }
-
-    // If no filter is applied, return the filtered locations by deviceId
-    if (deviceId) {
-      const filteredLocations = locations.filter(
-        (loc) => loc.deviceId === deviceId
-      );
-      return res.status(200).json(filteredLocations);
-    }
-
-    // If no filters are applied, return all locations
-    res.status(200).json(locations);
-  } catch (error) {
-    console.error("Error loading locations:", error);
-    res.status(500).json({ error: "Failed to load locations" }); // Handle errors
+  const result = locationController.getLocations(deviceId, filter);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
+
+  res.status(result.status).json(result.data);
 });
 
 // Returns a specific location
 app.get("/api/locations/:id", (req, res) => {
   const id = parseInt(req.params.id);
 
-  try {
-    const locations = locationService.loadLocations();
-    const location = locations.find((loc) => loc.id === id);
-
-    if (location) {
-      res.status(200).json(location);
-    } else {
-      res.status(400).json({ error: `Location with id ${id} not found` });
-    }
-  } catch (error) {
-    console.error("Error loading locations:", error);
-    res.status(500).json({ error: "Failed to load locations" });
+  const result = locationController.getLocation(id);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
-});
 
-app.get("/api/devices", (req, res) => {
-  try {
-    const devices = deviceService.loadDevices();
-
-    if (devices.length > 0) {
-      res.status(200).json(devices);
-    } else {
-      res.status(404).json({ error: "No device found" });
-    }
-  } catch (error) {
-    console.error("Error loading devices:", error);
-    res.status(500).json({ error: "Failed to load devices" });
-  }
+  res.status(result.status).json(result.data);
 });
 
 // Stores a location
 app.post("/api/locations", (req, res) => {
-  try {
-    const data = req.body;
+  const data = req.body;
 
-    if (
-      !data.timestamp ||
-      data.mocked === null ||
-      data.mocked === undefined ||
-      !data.coords ||
-      !data.deviceId
-    ) {
-      return res.status(400).json({
-        error:
-          "Missing required fields: timestamp, mocked, coords and deviceId",
-      });
-    }
-
-    const newLocation = locationService.addLocation(data);
-    res.status(201).json(newLocation);
-  } catch (error) {
-    console.error("Error saving location:", error);
-    res.status(500).json({ error: "Failed to save location" });
+  const result = locationController.postLocation(data);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
+
+  res.status(result.status).json(result.data);
+});
+
+//#endregion Locations
+
+//#region Devices
+
+app.get("/api/devices", (req, res) => {
+  const result = deviceController.getDevices();
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
+  }
+
+  res.status(result.status).json(result.data);
 });
 
 // Stores a device
 app.post("/api/devices", (req, res) => {
-  try {
-    const data = req.body;
+  const data = req.body;
 
-    if ((data.ownerId !== 0 && !data.ownerId) || data.name === "") {
-      return res
-        .status(400)
-        .json({ error: "Missing required fields: ownerId and name" });
-    }
-
-    const users = userService.loadUsers();
-    if (!users.some((user) => user.id === data.ownerId)) {
-      res.status(404).json({ error: "Owner not found" });
-    }
-
-    const newDevice = deviceService.addDevice(data);
-    res.status(201).json(newDevice);
-  } catch (error) {
-    console.error("Error saving device:", error);
-    res.status(500).json({ error: "Failed to save device" });
+  const result = deviceController.postDevice(data);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
+
+  res.status(result.status).json(result.data);
 });
+
+//#endregion Devices
 
 const port = process.env.PORT || 8118;
 const ip = "0.0.0.0";
