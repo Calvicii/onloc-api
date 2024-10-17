@@ -3,6 +3,7 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { LocationService } from "./services/locationService.js";
+import { DeviceService } from "./services/deviceService.js";
 import { UserService } from "./services/userService.js";
 import { authenticateToken } from "./middleware/auth.js";
 import "dotenv/config";
@@ -12,6 +13,9 @@ app.use(express.json());
 
 const locationsPath = "./locations.json";
 const locationService = new LocationService(locationsPath);
+
+const devicesPath = "./devices.json";
+const deviceService = new DeviceService(devicesPath);
 
 const usersPath = "./users.json";
 const userService = new UserService(usersPath);
@@ -180,14 +184,7 @@ app.get("/api/locations/:id", (req, res) => {
 
 app.get("/api/devices", (req, res) => {
   try {
-    const locations = locationService.loadLocations();
-    let devices = [];
-
-    for (let location of locations) {
-      if (!devices.includes(location.deviceId)) {
-        devices.push(location.deviceId);
-      }
-    }
+    const devices = deviceService.loadDevices();
 
     if (devices.length > 0) {
       res.status(200).json(devices);
@@ -213,7 +210,8 @@ app.post("/api/locations", (req, res) => {
       !data.deviceId
     ) {
       return res.status(400).json({
-        error: "Missing required fields: timestamp, mocked, coords and deviceId",
+        error:
+          "Missing required fields: timestamp, mocked, coords and deviceId",
       });
     }
 
@@ -222,6 +220,30 @@ app.post("/api/locations", (req, res) => {
   } catch (error) {
     console.error("Error saving location:", error);
     res.status(500).json({ error: "Failed to save location" });
+  }
+});
+
+// Stores a device
+app.post("/api/devices", (req, res) => {
+  try {
+    const data = req.body;
+
+    if ((data.ownerId !== 0 && !data.ownerId) || data.name === "") {
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: ownerId and name" });
+    }
+
+    const users = userService.loadUsers();
+    if (!users.some((user) => user.id === data.ownerId)) {
+      res.status(404).json({ error: "Owner not found" });
+    }
+
+    const newDevice = deviceService.addDevice(data);
+    res.status(201).json(newDevice);
+  } catch (error) {
+    console.error("Error saving device:", error);
+    res.status(500).json({ error: "Failed to save device" });
   }
 });
 
