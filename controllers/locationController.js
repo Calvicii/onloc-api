@@ -8,9 +8,8 @@ export class LocationController {
 
   getLocations(deviceId = null, filter = null) {
     try {
-      const locations = this.locationService.loadLocations(); // Load all locations
+      const locations = this.locationService.loadLocations();
 
-      // If the filter is 'latest', gather the latest location for each device
       if (filter === "latest") {
         const latestLocations = {};
 
@@ -20,7 +19,7 @@ export class LocationController {
             new Date(location.timestamp) >
               new Date(latestLocations[location.deviceId].timestamp)
           ) {
-            latestLocations[location.deviceId] = location; // Update with latest location
+            latestLocations[location.deviceId] = location;
           }
         });
 
@@ -35,10 +34,9 @@ export class LocationController {
           }
         }
 
-        return { status: 200, data: latestLocations };
+        return { status: 200, data: Object.values(latestLocations) };
       }
 
-      // If no filter is applied, return the filtered locations by deviceId
       if (deviceId) {
         const filteredLocations = locations.filter(
           (loc) => loc.deviceId === deviceId
@@ -46,7 +44,6 @@ export class LocationController {
         return { status: 200, data: filteredLocations };
       }
 
-      // If no filters are applied, return all locations
       return { status: 200, data: locations };
     } catch (error) {
       console.error("Error loading locations:", error);

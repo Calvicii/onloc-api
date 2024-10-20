@@ -16,12 +16,17 @@ export class DeviceController {
   getDevices() {
     try {
       const devices = this.deviceService.loadDevices();
-
+  
       if (devices.length > 0) {
         for (const device of devices) {
-          const location = this.locationController.getLocations(device.id, "latest");
-          if (location.data) {
-            device.lastSeen = location.data[device.id].timestamp;
+          const locationResult = this.locationController.getLocations(device.id, "latest");
+  
+          // Check if locationResult contains data and handle it properly
+          if (locationResult.status === 200 && locationResult.data) {
+            const latestLocation = locationResult.data; // Should be a single location object, not an array
+            if (latestLocation && latestLocation.timestamp) {
+              device.lastSeen = latestLocation.timestamp;
+            }
           }
         }
         return { status: 200, data: devices };
@@ -33,6 +38,7 @@ export class DeviceController {
       return { status: 500, error: "Failed to load devices" };
     }
   }
+  
 
   postDevice(device) {
     try {
