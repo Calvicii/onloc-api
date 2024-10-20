@@ -21,9 +21,9 @@ export class DeviceController {
         for (const device of devices) {
           const locationResult = this.locationController.getLocations(device.id, "latest");
   
-          // Check if locationResult contains data and handle it properly
           if (locationResult.status === 200 && locationResult.data) {
-            const latestLocation = locationResult.data; // Should be a single location object, not an array
+            const latestLocation = locationResult.data[0];
+            console.log(latestLocation);
             if (latestLocation && latestLocation.timestamp) {
               device.lastSeen = latestLocation.timestamp;
             }
