@@ -23,7 +23,6 @@ export class DeviceController {
   
           if (locationResult.status === 200 && locationResult.data) {
             const latestLocation = locationResult.data[0];
-            console.log(latestLocation);
             if (latestLocation && latestLocation.timestamp) {
               device.lastSeen = latestLocation.timestamp;
             }
