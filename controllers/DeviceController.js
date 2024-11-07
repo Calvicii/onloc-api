@@ -1,5 +1,5 @@
 import { DeviceService } from "../services/deviceService.js";
-import { LocationController } from "./locationController.js";
+import { LocationController } from "./LocationController.js";
 import { UserService } from "../services/userService.js";
 
 export class DeviceController {

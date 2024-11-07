@@ -1,4 +1,4 @@
-import { Coords } from "./coords.js";
+import { Coords } from "./Coords.js";
 
 export class Location {
   constructor(id, timestamp, mocked, coords, deviceId) {

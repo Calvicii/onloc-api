@@ -1,4 +1,4 @@
-import { User } from "../models/user.js";
+import { User } from "../models/User.js";
 import { getFileContent, writeToFile, getNextId } from "../utils.js";
 
 export class UserService {

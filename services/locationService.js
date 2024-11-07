@@ -1,4 +1,4 @@
-import { Location } from "../models/location.js";
+import { Location } from "../models/Location.js";
 import { getFileContent, writeToFile, getNextId } from "../utils.js";
 
 export class LocationService {

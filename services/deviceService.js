@@ -1,4 +1,4 @@
-import { Device } from "../models/device.js";
+import { Device } from "../models/Device.js";
 import { getFileContent, writeToFile, getNextId } from "../utils.js";
 
 export class DeviceService {
