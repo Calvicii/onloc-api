@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('owner_id');
             $table->string('name')->unique();
-            $table->string('icon');
-            $table->unsignedTinyInteger('battery_level');
+            $table->string('icon')->nullable();
+            $table->unsignedTinyInteger('battery_level')->nullable();
             $table->timestamps();
 
             $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');

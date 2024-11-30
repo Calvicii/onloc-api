@@ -18,55 +18,43 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'username' => ['required', 'string'],
-                'password' => ['required'],
-            ]);
+        $validated = $request->validate([
+            'username' => ['required', 'string'],
+            'password' => ['required'],
+        ]);
 
-            if (Auth::attempt($validated)) {
-                $user = User::where('username', $request->username)->first();
+        if (Auth::attempt($validated)) {
+            $user = User::where('username', $request->username)->first();
 
-                $user->tokens()->delete();
-                $token = $user->createToken('OnlocToken');
-                
-                return response()->json([
-                    'user' => $user,
-                    'token' => $token->plainTextToken
-                ], 200);
-            }
-
-            return response()->json(['errors' => 'Could not log in.'], 400);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'errors' => $e->errors(),
-            ], 422);
-        }
-    }
-
-    public function register(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'username' => ['required', 'string', 'unique:users', 'max:16'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-            ]);
-
-            $user = User::create([
-                'username' => $validated['username'],
-                'password' => Hash::make($validated['password']),
-            ]);
-
+            $user->tokens()->delete();
             $token = $user->createToken('OnlocToken');
 
             return response()->json([
                 'user' => $user,
-                'token' => $token->plainTextToken,
-            ], 201);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'errors' => $e->errors(),
-            ], 422);
+                'token' => $token->plainTextToken
+            ], 200);
         }
+
+        return response()->json(['errors' => 'Could not log in.'], 400);
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'unique:users', 'max:16'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = User::create([
+            'username' => $validated['username'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        $token = $user->createToken('OnlocToken');
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token->plainTextToken,
+        ], 201);
     }
 }
