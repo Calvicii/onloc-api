@@ -12,7 +12,10 @@ class DeviceController extends Controller
      */
     public function index()
     {
-        //
+        $user = auth()->user();
+        $devices = Device::where('owner_id', $user->id);
+
+        return response()->json($devices);
     }
 
     /**
