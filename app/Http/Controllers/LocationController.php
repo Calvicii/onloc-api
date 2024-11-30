@@ -56,7 +56,20 @@ class LocationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'device_id' => ['required', 'integer', 'exists:devices,id,user_id,' . Auth::id()],
+            'accuracy' => ['required', 'numeric'],
+            'altitude' => ['required', 'numeric'],
+            'altitude_accuracy' => ['required', 'numeric'],
+            'heading' => ['required', 'numeric'],
+            'latitude' => ['required', 'numeric'],
+            'longitude' => ['required', 'numeric'],
+            'speed' => ['required', 'numeric'],
+        ]);
+
+        $location = Location::create($validated);
+
+        return response()->json($location, 201);
     }
 
     /**
@@ -64,7 +77,11 @@ class LocationController extends Controller
      */
     public function show(Location $location)
     {
-        //
+        if ($location->device->user_id == Auth::id()) {
+            return response()->json($location, 200);
+        } else {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
     }
 
     /**
@@ -72,7 +89,23 @@ class LocationController extends Controller
      */
     public function update(Request $request, Location $location)
     {
-        //
+        $validated = $request->validate([
+            'device_id' => ['nullable', 'integer', 'exists:devices,id,user_id,' . Auth::id()],
+            'accuracy' => ['nullable', 'numeric'],
+            'altitude' => ['nullable', 'numeric'],
+            'altitude_accuracy' => ['nullable', 'numeric'],
+            'heading' => ['nullable', 'numeric'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'speed' => ['nullable', 'numeric'],
+        ]);
+
+        if ($location->device->user_id == Auth::id()) {
+            $location->update($validated);
+            return response()->json($location, 200);
+        } else {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
     }
 
     /**
@@ -80,6 +113,11 @@ class LocationController extends Controller
      */
     public function destroy(Location $location)
     {
-        //
+        if ($location->device->user_id == Auth::id()) {
+            $location->delete();
+            return response(['message' => 'Device deleted successfully.'], 200);
+        } else {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
     }
 }

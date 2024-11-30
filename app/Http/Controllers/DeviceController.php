@@ -31,10 +31,8 @@ class DeviceController extends Controller
             'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
-        $user = Auth::user();
-
         $data = [
-            'user_id' => $user->id,
+            'user_id' => Auth::id(),
             'name' => $validated['name'],
         ];
 
@@ -56,9 +54,7 @@ class DeviceController extends Controller
      */
     public function show(Device $device)
     {
-        $user = Auth::user();
-
-        if ($device->user_id == $user->id) {
+        if ($device->user_id == Auth::id()) {
             return response()->json($device, 200);
         } else {
             return response()->json(['message' => 'Unauthorized.'], 401);
@@ -76,9 +72,7 @@ class DeviceController extends Controller
             'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
-        $user = Auth::user();
-
-        if ($device->user_id == $user->id) {
+        if ($device->user_id == Auth::id()) {
             $device->update($validated);
             return response()->json($device, 200);
         } else {
@@ -91,9 +85,7 @@ class DeviceController extends Controller
      */
     public function destroy(Device $device)
     {
-        $user = Auth::user();
-
-        if ($device->user_id == $user->id) {
+        if ($device->user_id == Auth::id()) {
             $device->delete();
             return response(['message' => 'Device deleted successfully.'], 200);
         } else {
