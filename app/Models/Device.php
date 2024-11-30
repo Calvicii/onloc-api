@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Device extends Model
 {
-    protected $fillable = ['owner_id', 'name', 'icon', 'battery_level'];
+    protected $fillable = ['user_id', 'name', 'icon', 'battery_level'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function locations()
+    {
+        return $this->hasMany(Location::class);
+    }
 }

@@ -15,7 +15,7 @@ class DeviceController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $devices = Device::where('owner_id', $user->id)->get();
+        $devices = $user->devices;
 
         return response()->json($devices, 200);
     }
@@ -34,7 +34,7 @@ class DeviceController extends Controller
         $user = Auth::user();
 
         $data = [
-            'owner_id' => $user->id,
+            'user_id' => $user->id,
             'name' => $validated['name'],
         ];
 
@@ -58,7 +58,7 @@ class DeviceController extends Controller
     {
         $user = Auth::user();
 
-        if ($device->owner_id == $user->id) {
+        if ($device->user_id == $user->id) {
             return response()->json($device, 200);
         } else {
             return response()->json(['message' => 'Unauthorized.'], 401);
@@ -78,7 +78,7 @@ class DeviceController extends Controller
 
         $user = Auth::user();
 
-        if ($device->owner_id == $user->id) {
+        if ($device->user_id == $user->id) {
             $device->update($validated);
             return response()->json($device, 200);
         } else {
@@ -93,7 +93,7 @@ class DeviceController extends Controller
     {
         $user = Auth::user();
 
-        if ($device->owner_id == $user->id) {
+        if ($device->user_id == $user->id) {
             $device->delete();
             return response(['message' => 'Device deleted successfully.'], 200);
         } else {

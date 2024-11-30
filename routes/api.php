@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LocationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,4 +14,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/info', [AuthController::class, 'info']);
 
     Route::apiResource('devices', DeviceController::class);
+    Route::apiResource('locations', LocationController::class);
 });
