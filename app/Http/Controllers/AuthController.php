@@ -26,7 +26,10 @@ class AuthController extends Controller
 
             if (Auth::attempt($validated)) {
                 $user = User::where('username', $request->username)->first();
+
+                $user->tokens()->delete();
                 $token = $user->createToken('OnlocToken');
+                
                 return response()->json([
                     'user' => $user,
                     'token' => $token->plainTextToken
