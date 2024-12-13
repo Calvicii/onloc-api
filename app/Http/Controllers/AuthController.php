@@ -35,7 +35,7 @@ class AuthController extends Controller
             ], 200);
         }
 
-        return response()->json(['errors' => 'Could not log in.'], 400);
+        return response()->json(['error' => 'Invalid credentials.'], 400);
     }
 
     public function register(Request $request)
@@ -56,5 +56,22 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token->plainTextToken,
         ], 201);
+    }
+
+    public function logout(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $user = User::find($validated['id']);
+
+        if (!$user) {
+            return  response()->json(['error' => 'User not found.'], 404);
+        }
+
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Logged out successfully.'], 200);
     }
 }
