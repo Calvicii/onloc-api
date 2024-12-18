@@ -6,14 +6,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function info()
+    public function validateAuth()
     {
-        return response()->json(['info' => 'hi'], 200);
+        return response()->json(['valid' => true], 200);
     }
 
     public function login(Request $request)
