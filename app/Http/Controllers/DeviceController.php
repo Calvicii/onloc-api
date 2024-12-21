@@ -28,7 +28,6 @@ class DeviceController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'unique:devices', 'max:255'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
         $data = [
@@ -38,10 +37,6 @@ class DeviceController extends Controller
 
         if (isset($validated['icon'])) {
             $data['icon'] = $validated['icon'];
-        }
-
-        if (isset($validated['battery_level'])) {
-            $data['battery_level'] = $validated['battery_level'];
         }
 
         $device = Device::create($data);
@@ -69,7 +64,6 @@ class DeviceController extends Controller
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'unique:devices,name,' . $device->id, 'max:255'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'battery_level' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
         if ($device->user_id == Auth::id()) {
