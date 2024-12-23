@@ -61,10 +61,8 @@ class LocationController extends Controller
             'accuracy' => ['required', 'numeric'],
             'altitude' => ['required', 'numeric'],
             'altitude_accuracy' => ['required', 'numeric'],
-            'heading' => ['required', 'numeric'],
             'latitude' => ['required', 'numeric'],
             'longitude' => ['required', 'numeric'],
-            'speed' => ['required', 'numeric'],
         ]);
 
         $location = Location::create($validated);
