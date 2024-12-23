@@ -17,10 +17,8 @@ return new class extends Migration
             $table->double('accuracy');
             $table->double('altitude');
             $table->double('altitude_accuracy');
-            $table->double('heading');
             $table->double('latitude');
             $table->double('longitude');
-            $table->double('speed');
             $table->timestamps();
 
             $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');

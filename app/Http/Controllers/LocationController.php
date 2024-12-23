@@ -94,10 +94,8 @@ class LocationController extends Controller
             'accuracy' => ['nullable', 'numeric'],
             'altitude' => ['nullable', 'numeric'],
             'altitude_accuracy' => ['nullable', 'numeric'],
-            'heading' => ['nullable', 'numeric'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
-            'speed' => ['nullable', 'numeric'],
         ]);
 
         if ($location->device->user_id == Auth::id()) {
