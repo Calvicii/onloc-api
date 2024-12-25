@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -57,17 +58,13 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $validated = $request->validate([
-            'id' => ['required', 'integer', 'exists:users,id'],
-        ]);
-
-        $user = User::find($validated['id']);
-
+        $user = $request->user();
+        
         if (!$user) {
-            return  response()->json(['message' => 'User not found.'], 404);
+            return response()->json(['message' => 'Unauthorized.'], 401);
         }
 
-        $user->tokens()->delete();
+        $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.'], 200);
     }

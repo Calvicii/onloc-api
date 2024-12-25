@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout']);
 
 // Route where an authorization is required
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/validate-auth', [AuthController::class, 'validateAuth']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::apiResource('devices', DeviceController::class);
     Route::apiResource('locations', LocationController::class);
