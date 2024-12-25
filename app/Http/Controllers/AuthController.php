@@ -33,7 +33,7 @@ class AuthController extends Controller
             ], 200);
         }
 
-        return response()->json(['error' => 'Invalid credentials.'], 400);
+        return response()->json(['message' => 'Invalid credentials.'], 400);
     }
 
     public function register(Request $request)
@@ -65,7 +65,7 @@ class AuthController extends Controller
         $user = User::find($validated['id']);
 
         if (!$user) {
-            return  response()->json(['error' => 'User not found.'], 404);
+            return  response()->json(['message' => 'User not found.'], 404);
         }
 
         $user->tokens()->delete();
