@@ -12,6 +12,7 @@ Route::post('/register', [AuthController::class, 'register']);
 // Route where an authorization is required
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/validate-auth', [AuthController::class, 'validateAuth']);
+    Route::get('/user', [AuthController::class, 'index']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::apiResource('devices', DeviceController::class);
