@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class DeviceController extends Controller
 {
@@ -15,9 +15,21 @@ class DeviceController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $devices = $user->devices;
+        $devices = $user->devices()->with(['locations' => function ($query) {
+            $query->latest()->take(1);
+        }])->get();
 
-        return response()->json($devices, 200);
+        $devicesWithLatestLocation = $devices->map(function ($device) {
+            $latestLocation = $device->locations->first();
+            return [
+                'id' => $device->id,
+                'name' => $device->name,
+                'icon' => $device->icon,
+                'latest_location' => $latestLocation,
+            ];
+        });
+
+        return response()->json($devicesWithLatestLocation, 200);
     }
 
     /**
