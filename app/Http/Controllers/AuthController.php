@@ -35,7 +35,8 @@ class AuthController extends Controller
         if (Auth::attempt($validated)) {
             $user = User::where('username', $request->username)->first();
 
-            $token = $user->createToken('OnlocToken');
+            $userAgent = $request->header('User-Agent');
+            $token = $user->createToken($userAgent);
 
             return response()->json([
                 'user' => $user,
@@ -58,7 +59,8 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $token = $user->createToken('OnlocToken');
+        $userAgent = $request->header('User-Agent');
+        $token = $user->createToken($userAgent);
 
         return response()->json([
             'user' => $user,
@@ -69,7 +71,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $user = $request->user();
-        
+
         if (!$user) {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
@@ -77,5 +79,37 @@ class AuthController extends Controller
         $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.'], 201);
+    }
+
+    public function tokens(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
+
+        $tokens = $user->tokens()->get(['id', 'name', 'last_used_at', 'created_at']);
+
+        return response()->json($tokens, 200);
+    }
+
+    public function deleteToken(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
+
+        $token = $user->tokens()->find($id);
+
+        if (!$token) {
+            return response()->json(['message' => 'Token not found.'], 404);
+        }
+
+        $token->delete();
+
+        return response()->json(['message' => 'Token deleted successfully.'], 200);
     }
 }

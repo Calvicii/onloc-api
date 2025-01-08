@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('device_id');
-            $table->double('accuracy');
-            $table->double('altitude');
-            $table->double('altitude_accuracy');
+            $table->double('accuracy')->nullable();
+            $table->double('altitude')->nullable();
+            $table->double('altitude_accuracy')->nullable();
             $table->double('latitude');
             $table->double('longitude');
+            $table->unsignedBigInteger('battery')->nullable();
             $table->timestamps();
 
             $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');

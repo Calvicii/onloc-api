@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class DeviceController extends Controller
 {
@@ -38,7 +39,14 @@ class DeviceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'unique:devices', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('devices')->where(function ($query) use ($request) {
+                    return $query->where('user_id', $request->user()->id);
+                }),
+            ],
             'icon' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -53,7 +61,7 @@ class DeviceController extends Controller
 
         $device = Device::create($data);
 
-        return response()->json($device, 201);
+        return response()->json(['message' => 'Device created successfully.', 'device' => $device], 201);
     }
 
     /**
