@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,21 +55,24 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $isAdmin = User::where('admin', true)->exists() ? false : true;
+        if (!ServerController::isSetup() || Setting::where('key', 'registration')->first() === true) {
+            $isAdmin = User::where('admin', true)->exists() ? false : true;
 
-        $user = User::create([
-            'username' => $validated['username'],
-            'password' => Hash::make($validated['password']),
-            'admin' => $isAdmin,
-        ]);
+            $user = User::create([
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
+                'admin' => $isAdmin,
+            ]);
 
-        $userAgent = $request->header('User-Agent');
-        $token = $user->createToken($userAgent);
+            $userAgent = $request->header('User-Agent');
+            $token = $user->createToken($userAgent);
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token->plainTextToken,
-        ], 201);
+            return response()->json([
+                'user' => $user,
+                'token' => $token->plainTextToken,
+            ], 201);
+        }
+        return response()->json(['message' => 'Registration is disabled.'], 403);
     }
 
     public function logout(Request $request)

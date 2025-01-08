@@ -82,7 +82,14 @@ class DeviceController extends Controller
     public function update(Request $request, Device $device)
     {
         $validated = $request->validate([
-            'name' => ['nullable', 'string', 'unique:devices,name,' . $device->id, 'max:255'],
+            'name' => [
+                'nullable',
+                'string',
+                Rule::unique('devices')->where(function ($query) use ($request) {
+                    return $query->where('user_id', $request->user()->id);
+                })->ignore($device->id),
+                'max:255'
+            ],
             'icon' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -101,7 +108,7 @@ class DeviceController extends Controller
     {
         if ($device->user_id == Auth::id()) {
             $device->delete();
-            return response(['message' => 'Device deleted successfully.'], 200);
+            return response(['message' => 'Device deleted successfully.'], 204);
         } else {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
