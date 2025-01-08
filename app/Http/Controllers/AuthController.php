@@ -54,9 +54,12 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $isAdmin = User::where('admin', true)->exists() ? false : true;
+
         $user = User::create([
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
+            'admin' => $isAdmin,
         ]);
 
         $userAgent = $request->header('User-Agent');
