@@ -15,7 +15,7 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::get();
-        return response()->json(['settings' => $settings], 200);
+        return response()->json($settings, 200);
     }
 
     /**
@@ -39,7 +39,7 @@ class SettingController extends Controller
     public function show(string $id)
     {
         $setting = Setting::findOrFail($id);
-        return response()->json(['setting' => $setting], 200);
+        return response()->json($setting, 200);
     }
 
     /**
