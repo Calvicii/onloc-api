@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\User;
 
 class ServerController extends Controller
@@ -18,9 +19,17 @@ class ServerController extends Controller
 
     public function status()
     {
+        $registrationSetting = Setting::where('key', 'registration')->first();
+        $registration = $registrationSetting ? filter_var($registrationSetting->value, FILTER_VALIDATE_BOOLEAN) : false;
+
+        $isSetup = false;
         if ($this::isSetup()) {
-            return response()->json(['isSetup' => 'true', 'message' => 'The server is setup.'], 200);
+            $isSetup = true;
         }
-        return response()->json(['isSetup' => 'false', 'message' => 'The server is not setup.'], 200);
+
+        return response()->json([
+            'isSetup' => $isSetup,
+            'registration' => $registration,
+        ], 200);
     }
 }
