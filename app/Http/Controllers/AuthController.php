@@ -55,7 +55,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (!ServerController::isSetup() || Setting::where('key', 'registration')->first() === true) {
+        if (!ServerController::isSetup() || ServerController::hasRegistration()) {
             $isAdmin = User::where('admin', true)->exists() ? false : true;
 
             $user = User::create([

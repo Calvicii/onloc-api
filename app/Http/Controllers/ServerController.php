@@ -17,11 +17,14 @@ class ServerController extends Controller
         return $isSetup;
     }
 
-    public function status()
+    public static function hasRegistration()
     {
         $registrationSetting = Setting::where('key', 'registration')->first();
-        $registration = $registrationSetting ? filter_var($registrationSetting->value, FILTER_VALIDATE_BOOLEAN) : false;
+        return $registrationSetting ? filter_var($registrationSetting->value, FILTER_VALIDATE_BOOLEAN) : false;
+    }
 
+    public function status()
+    {
         $isSetup = false;
         if ($this::isSetup()) {
             $isSetup = true;
@@ -29,7 +32,7 @@ class ServerController extends Controller
 
         return response()->json([
             'isSetup' => $isSetup,
-            'registration' => $registration,
+            'registration' => $this::hasRegistration(),
         ], 200);
     }
 }
