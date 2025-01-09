@@ -111,7 +111,7 @@ class LocationController extends Controller
     {
         if ($location->device->user_id == Auth::id()) {
             $location->delete();
-            return response(['message' => 'Device deleted successfully.'], 204);
+            return response(['message' => 'Device deleted successfully.'], 200);
         } else {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }

@@ -71,6 +71,6 @@ class SettingController extends Controller
     {
         $setting = Setting::findOrFail($id);
         $setting->delete();
-        return response()->json(['message' => 'Setting deleted successfully.'], 204);
+        return response()->json(['message' => 'Setting deleted successfully.'], 200);
     }
 }

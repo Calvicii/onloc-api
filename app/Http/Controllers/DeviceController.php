@@ -108,7 +108,7 @@ class DeviceController extends Controller
     {
         if ($device->user_id == Auth::id()) {
             $device->delete();
-            return response(['message' => 'Device deleted successfully.'], 204);
+            return response()->json(['message' => 'Device deleted successfully.'], 200);
         } else {
             return response()->json(['message' => 'Unauthorized.'], 401);
         }
