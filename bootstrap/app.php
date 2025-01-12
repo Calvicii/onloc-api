@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Middleware\forceJsonResponse;
+use App\Http\Middleware\ForceJsonResponseMiddleware;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,9 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(forceJsonResponse::class);
+        $middleware->append(ForceJsonResponseMiddleware::class);
         $middleware->alias([
-            'admin' => App\Http\Middleware\AdminMiddleware::class,
+            'admin' => AdminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
