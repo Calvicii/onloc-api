@@ -58,11 +58,12 @@ class LocationController extends Controller
     {
         $validated = $request->validate([
             'device_id' => ['required', 'integer', 'exists:devices,id,user_id,' . Auth::id()],
-            'accuracy' => ['required', 'numeric'],
-            'altitude' => ['required', 'numeric'],
-            'altitude_accuracy' => ['required', 'numeric'],
+            'accuracy' => ['nullable', 'numeric'],
+            'altitude' => ['nullable', 'numeric'],
+            'altitude_accuracy' => ['nullable', 'numeric'],
             'latitude' => ['required', 'numeric'],
             'longitude' => ['required', 'numeric'],
+            'battery' => ['nullable', 'numeric'],
         ]);
 
         $location = Location::create($validated);
@@ -94,6 +95,7 @@ class LocationController extends Controller
             'altitude_accuracy' => ['nullable', 'numeric'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
+            'battery' => ['nullable', 'numeric'],
         ]);
 
         if ($location->device->user_id == Auth::id()) {

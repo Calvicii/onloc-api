@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Location extends Model
 {
-    protected $fillable = ['device_id', 'accuracy', 'altitude', 'altitude_accuracy', 'latitude', 'longitude'];
+    protected $fillable = ['device_id', 'accuracy', 'altitude', 'altitude_accuracy', 'latitude', 'longitude', 'battery'];
 
     public function device()
     {
