@@ -16,6 +16,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', [AuthController::class, 'index']);
     Route::get('/user/tokens', [AuthController::class, 'tokens']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::patch('/user', [AuthController::class, 'update']);
     Route::delete('/user/tokens/{id}', [AuthController::class, 'deleteToken']);
 
     Route::apiResource('devices', DeviceController::class);
@@ -23,7 +24,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Routes that require admin privileges
     Route::middleware(['admin'])->group(function () {
-        Route::patch('/user', [AuthController::class, 'update']);
         Route::apiResource('settings', SettingController::class);
     });
 });
