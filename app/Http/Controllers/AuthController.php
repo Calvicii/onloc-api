@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,24 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('id', $request->id)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        if ($user->id !== Auth::id()) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        try {
+            $user->update($validated);
+            return response()->json($user, 200);
+        } catch (QueryException $e) { // Unique constraint violation
+            if ($e->getCode() == 23505) {
+                return response()->json(['message' => 'This username is already taken.'], 422);
+            }
+            return response()->json(['message' => 'An error occured while updating the user.'], 500);
+        }
 
         if ($user->id == Auth::id()) {
             $user->update($validated);
