@@ -33,7 +33,7 @@ class AuthController extends Controller
             $user->update($validated);
             return response()->json($user, 200);
         } else {
-            return response()->json(['message' => 'Unauthorized.'], 401);
+            return response()->json(['message' => 'Forbidden.'], 403);
         }
     }
 
