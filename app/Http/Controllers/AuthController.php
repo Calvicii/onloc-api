@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,11 +9,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function validateAuth()
-    {
-        return response()->json(['valid' => true], 200);
-    }
-
     public function index(Request $request)
     {
         $user = $request->user();
@@ -24,6 +18,23 @@ class AuthController extends Controller
         }
 
         return response()->json($user, 201);
+    }
+
+    public function update(Request $request)
+    {
+        $validated = $request->validate([
+            'username' => ['nullable', 'string', 'max:255'],
+            'password' => ['nullable', 'string', 'max:255']
+        ]);
+
+        $user = User::where('id', $request->id)->first();
+
+        if ($user->id == Auth::id()) {
+            $user->update($validated);
+            return response()->json($user, 200);
+        } else {
+            return response()->json(['message' => 'Unauthorized.'], 401);
+        }
     }
 
     public function login(Request $request)

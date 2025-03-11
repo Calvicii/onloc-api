@@ -13,7 +13,6 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Route where an authorization is required
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/validate-auth', [AuthController::class, 'validateAuth']);
     Route::get('/user', [AuthController::class, 'index']);
     Route::get('/user/tokens', [AuthController::class, 'tokens']);
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -24,6 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Routes that require admin privileges
     Route::middleware(['admin'])->group(function () {
+        Route::patch('/user', [AuthController::class, 'update']);
         Route::apiResource('settings', SettingController::class);
     });
 });
