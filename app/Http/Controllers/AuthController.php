@@ -24,8 +24,8 @@ class AuthController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'username' => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'max:255']
+            'username' => ['nullable', 'string', 'unique:users', 'max:16'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed']
         ]);
 
         $user = User::where('id', $request->id)->first();
@@ -38,15 +38,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        try {
-            $user->update($validated);
-            return response()->json($user, 200);
-        } catch (QueryException $e) { // Unique constraint violation
-            if ($e->getCode() == 23505) {
-                return response()->json(['message' => 'This username is already taken.'], 422);
-            }
-            return response()->json(['message' => 'An error occured while updating the user.'], 500);
-        }
+        $user->update($validated);
+        return response()->json($user, 200);
 
         if ($user->id == Auth::id()) {
             $user->update($validated);
