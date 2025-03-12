@@ -24,8 +24,8 @@ class AuthController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'username' => ['nullable', 'string', 'unique:users', 'max:16'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed']
+            'username' => ['sometimes', 'string', 'unique:users', 'max:16'],
+            'password' => ['sometimes', 'string', 'min:8', 'confirmed']
         ]);
 
         $user = User::where('id', $request->id)->first();
@@ -36,6 +36,10 @@ class AuthController extends Controller
 
         if ($user->id !== Auth::id()) {
             return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
         }
 
         $user->update($validated);
