@@ -41,14 +41,24 @@ class LocationController extends Controller
         $groupedLocations = $locations->groupBy('device_id');
 
         if ($latest && strtolower($latest) === 'true') {
-            $latestLocations = $groupedLocations->map(function ($deviceLocations) {
-                return $deviceLocations->sortByDesc('created_at')->first();
-            });
+            $latestLocations = $groupedLocations->map(function ($deviceLocations, $deviceId) {
+                return [
+                    'device_id' => $deviceId,
+                    'locations' => [$deviceLocations->sortByDesc('created_at')->first()]
+                ];
+            })->values();
 
             return response()->json($latestLocations, 200);
         }
 
-        return response()->json($groupedLocations, 200);
+        $formattedLocations = $groupedLocations->map(function ($deviceLocations, $deviceId) {
+            return [
+                'device_id' => $deviceId,
+                'locations' => $deviceLocations->values()
+            ];
+        })->values();
+
+        return response()->json($formattedLocations, 200);
     }
 
     /**
