@@ -62,6 +62,35 @@ class LocationController extends Controller
     }
 
     /**
+     * Display the available dates associated with a device's locations
+     */
+    public function availableDates(Request $request)
+    {
+        $deviceId = $request->query('device_id');
+
+        $user = Auth::user();
+        $query = Location::whereHas('device', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        });
+
+        if ($deviceId) {
+            $query->where('device_id', $deviceId);
+        }
+
+        $dates = $query
+            ->orderBy('created_at')
+            ->get()
+            ->pluck('created_at')
+            ->map(function ($date) {
+                return $date->toDateString();
+            })
+            ->unique()
+            ->values();
+
+        return response()->json($dates, 200);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

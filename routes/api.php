@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::patch('/user', [AuthController::class, 'update']);
     Route::delete('/user/tokens/{id}', [AuthController::class, 'deleteToken']);
+    Route::get('/locations/dates', [LocationController::class, 'availableDates']);
 
     Route::apiResource('devices', DeviceController::class);
     Route::apiResource('locations', LocationController::class);
