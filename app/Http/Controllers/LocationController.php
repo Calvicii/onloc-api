@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Device;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class LocationController extends Controller
 {
@@ -29,11 +30,29 @@ class LocationController extends Controller
         }
 
         if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
+            $startDateConverted = Carbon::parse($startDate);
+
+            $startTimezone = $startDateConverted->getTimezone();
+
+            $startDateConverted
+                ->setTimezone($startTimezone)
+                ->startOfDay()
+                ->setTimezone('UTC')
+                ->toDateTimeString();
+            $query->where('created_at', '>=', $startDateConverted);
         }
 
         if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
+            $endDateConverted = Carbon::parse($endDate);
+
+            $endTimezone = $endDateConverted->getTimezone();
+
+            $endDateConverted
+                ->setTimezone($endTimezone)
+                ->endOfDay()
+                ->setTimezone('UTC')
+                ->toDateTimeString();
+            $query->where('created_at', '<=', $endDateConverted);
         }
 
         $locations = $query->orderBy('created_at')->get();
